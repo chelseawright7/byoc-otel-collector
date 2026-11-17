@@ -1,0 +1,66 @@
+# BYOC OpenTelemetry Collector for Bindplane.
+# dist.name is the agent type Bindplane sees (service.name) and the prefix of
+# every release asset, so it must not change between releases.
+dist:
+  module: github.com/chelseawright7/byoc-otel-collector
+  name: byoc-otel-collector
+  description: BYOC OpenTelemetry Collector with the components Bindplane needs
+  output_path: ./_build
+  version: v1.0.0
+
+conf_resolver:
+  default_uri_scheme: "env"
+
+receivers:
+  # Required by the OpAMP Supervisor (bootstrap pipeline)
+  - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.161.0
+  # Bindplane: route receiver (log-based metrics / processor routing)
+  - gomod: github.com/observiq/bindplane-otel-contrib/receiver/routereceiver v1.15.0
+  # General purpose
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/syslogreceiver v0.161.0
+
+processors:
+  # Bindplane: injected into every modular configuration for BYOC collectors
+  - gomod: github.com/observiq/bindplane-otel-contrib/processor/snapshotprocessor v1.15.0
+  - gomod: github.com/observiq/bindplane-otel-contrib/processor/throughputmeasurementprocessor v1.15.0
+  - gomod: github.com/observiq/bindplane-otel-contrib/processor/topologyprocessor v1.15.0
+  # General purpose
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.161.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/groupbyattrsprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.161.0
+
+exporters:
+  # Required by the OpAMP Supervisor (bootstrap pipeline)
+  - gomod: go.opentelemetry.io/collector/exporter/nopexporter v0.161.0
+  # General purpose
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.161.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.161.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.161.0
+
+extensions:
+  # Required by the OpAMP Supervisor; Bindplane's self-reporting processors also report through it
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampextension v0.161.0
+  # Bindplane: legacy measurements path (older servers, or when processors can't self-report)
+  - gomod: github.com/observiq/bindplane-otel-contrib/extension/bindplaneextension v1.15.0
+  # General purpose
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage v0.161.0
+
+connectors:
+  - gomod: go.opentelemetry.io/collector/connector/forwardconnector v0.161.0
+
+providers:
+  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.67.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.67.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.67.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.67.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.67.0

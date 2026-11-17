@@ -1,0 +1,72 @@
+name: Release
+
+# Push a tag that matches dist.version in manifest.yaml (e.g. v1.0.1) to build
+# and publish a release. Bindplane reads releases from this repo for the
+# byoc-otel-collector agent type.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - { os: linux, arch: amd64 }
+          - { os: linux, arch: arm64 }
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag must match manifest dist.version
+        run: |
+          v="$(awk '/^  version:/{print $2; exit}' manifest.yaml)"
+          if [ "$v" != "$GITHUB_REF_NAME" ]; then
+            echo "manifest.yaml dist.version is $v but the tag is $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Build and package
+        uses: observiq/otel-distro-builder@v1.2.0
+        with:
+          manifest: ./manifest.yaml
+          artifact_dir: ${{ github.workspace }}/artifacts
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.arch }}
+          ocb_version: "0.161.0"
+          supervisor_version: "0.165.0"
+          go_version: "1.26.4"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ github.workspace }}/artifacts/*
+          retention-days: 5
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+
+      # Each build job writes its own checksums file; rebuild one that covers
+      # every asset. Bindplane reads byoc-otel-collector_checksums.txt.
+      - name: Checksums
+        working-directory: dist
+        run: |
+          rm -f byoc-otel-collector_checksums.txt
+          sha256sum * > ../byoc-otel-collector_checksums.txt
+          mv ../byoc-otel-collector_checksums.txt .
+          ls -la
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          files: dist/*
