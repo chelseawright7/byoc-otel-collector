@@ -6,7 +6,7 @@ dist:
   name: byoc-otel-collector
   description: BYOC OpenTelemetry Collector with the components Bindplane needs
   output_path: ./_build
-  version: v1.0.0
+  version: v1.0.1
 
 conf_resolver:
   default_uri_scheme: "env"
@@ -16,6 +16,8 @@ receivers:
   - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.161.0
   # Bindplane: route receiver (log-based metrics / processor routing)
   - gomod: github.com/observiq/bindplane-otel-contrib/receiver/routereceiver v1.15.0
+  # Bindplane: collector pipeline health (scrapes the collector's own :8888 metrics)
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.161.0
   # General purpose
   - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.161.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.161.0
@@ -27,6 +29,8 @@ processors:
   - gomod: github.com/observiq/bindplane-otel-contrib/processor/snapshotprocessor v1.15.0
   - gomod: github.com/observiq/bindplane-otel-contrib/processor/throughputmeasurementprocessor v1.15.0
   - gomod: github.com/observiq/bindplane-otel-contrib/processor/topologyprocessor v1.15.0
+  # Bindplane: collector health metrics (CPU / memory shown on the agent page)
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.161.0
   # General purpose
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.161.0
   - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.161.0
