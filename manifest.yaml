@@ -6,7 +6,7 @@ dist:
   name: byoc-otel-collector
   description: BYOC OpenTelemetry Collector with the components Bindplane needs
   output_path: ./_build
-  version: v1.0.1
+  version: v1.0.2
 
 conf_resolver:
   default_uri_scheme: "env"
@@ -35,6 +35,7 @@ processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.161.0
   - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.161.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.161.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.161.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.161.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/groupbyattrsprocessor v0.161.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.161.0
